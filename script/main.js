@@ -17,6 +17,14 @@ class Grid extends Array {
     );
   }
 
+  width() {
+    return this[0].length;
+  }
+
+  height() {
+    return this.length;
+  }
+
   place(thing) {
     thing.positions.forEach(
       (posArr, index) => {
@@ -102,6 +110,10 @@ class Fruit {
     this.tokens = Array(this.positions.length).fill('fruit');
   }
 
+  newPosition(array) {
+    this.positions = [array];
+  }
+
   location() {
     return this.positions[0];
   }
@@ -110,21 +122,27 @@ class Fruit {
 document.addEventListener(
   'DOMContentLoaded',
   () => {
+    let randPos = function randPos(grid) {
+      let x;
+      let y;
+      do {
+        x = Math.floor(Math.random() * grid.width());
+        y = Math.floor(Math.random() * grid.height());
+      } while (grid[y][x] !== ' ')
+      return [x, y];
+    }
     let board = document.getElementById('board');
     let width = 40;
     let height = 40;
     let keyJammed = false;
     let grid = new Grid(width, height);
     let snake = new Snake([[20, 10], [21, 10]]);
-    let fruit = new Fruit([[
-                          Math.floor(Math.random() * width), 
-                          Math.floor(Math.random() * height)
-                          ]]);
     let renderIID;
-
     grid.clear();
-    grid.place(fruit);
     grid.place(snake);
+    let fruit = new Fruit([randPos(grid)]);
+    grid.place(fruit);
+
     board.innerHTML = grid.toHTML();
 
     board.addEventListener('click',
@@ -145,10 +163,7 @@ document.addEventListener(
                   && (snakeY == fruitY)
                 ) {
                 snake.grow();
-                fruit = new Fruit([[
-                                  Math.floor(Math.random() * width), 
-                                  Math.floor(Math.random() * height)
-                                  ]]);
+                fruit.newPosition(randPos(grid));
               }
 
               grid.clear();
