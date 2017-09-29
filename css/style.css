@@ -26,6 +26,15 @@ body {
   opacity: 0.65;
 }
 
+.snake {
+  background: black;
+  opacity: 0.8;
+}
+
+.fruit {
+  background: red;
+}
+
 .snake-body {
   background-color: black;
   opacity: 0.55;
