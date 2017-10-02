@@ -102,6 +102,17 @@ class Snake {
     this.positions.pop();
     this.tokens.pop();
   }
+
+  bumps() {
+    let [head, ...rest] = this.positions;
+    let [hX, hY] = head;
+    let bumps = (hX == -1) || (hX == 40) || 
+                (hY == -1) || (hY == 40) || 
+                rest.reduce((acc, arr) => {
+                  return acc || ((arr[0] == hX) && (arr[1] == hY));
+                }, false);
+    return bumps;
+  }
 }
 
 class Fruit {
@@ -131,6 +142,9 @@ document.addEventListener(
       } while (grid[y][x] !== ' ')
       return [x, y];
     }
+
+    let cyclesPerSecond = 10.0;
+    let period = Math.round( 1000 / cyclesPerSecond );
     let board = document.getElementById('board');
     let width = 40;
     let height = 40;
@@ -145,38 +159,36 @@ document.addEventListener(
 
     board.innerHTML = grid.toHTML();
 
-    board.addEventListener('click',
-      () => {
-        if(!!renderIID) {
-          clearInterval(renderIID);
-          renderIID = undefined;
-        } else {
-          renderIID = setInterval(
-            () => {
-              let [snakeX, snakeY] = snake.head();
-              let [fruitX, fruitY] = fruit.location();
+    const gameLoop = function gameLoop(){
+      period = Math.round( 1000 / cyclesPerSecond );
+      let [snakeX, snakeY] = snake.head();
+      let [fruitX, fruitY] = fruit.location();
 
-              snake.update();
-              keyJammed = false;
+      snake.update();
+      keyJammed = false;
 
-              if( (snakeX == fruitX)
-                  && (snakeY == fruitY)
-                ) {
-                snake.grow();
-                fruit.newPosition(randPos(grid));
-              }
+      if(snake.bumps()){
+        document.getElementsByTagName('body')[0].innerHTML = "GAMEOVER";
+      } else {
+        if( (snakeX == fruitX)
+            && (snakeY == fruitY)
+          ) {
+          snake.grow();
+          fruit.newPosition(randPos(grid));
+          cyclesPerSecond += 0.25;
+        }
 
-              grid.clear();
-              grid.place(fruit);
-              grid.place(snake);
+        grid.clear();
+        grid.place(fruit);
+        grid.place(snake);
 
-              board.innerHTML = grid.toHTML();
-            },
-            100
-          );
-        };
+        board.innerHTML = grid.toHTML();
+
+        setTimeout(gameLoop, period);
       }
-    );
+    };
+
+    board.addEventListener('click', gameLoop);
 
     window.addEventListener('keydown',
       (event) => {
